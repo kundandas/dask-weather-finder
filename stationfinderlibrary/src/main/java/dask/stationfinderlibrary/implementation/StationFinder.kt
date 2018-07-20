@@ -1,4 +1,4 @@
-package dask.stationfinderlibrary
+package dask.stationfinderlibrary.implementation
 
 import dask.stationfinderlibrary.api.IStationFinder
 import dask.stationfinderlibrary.api.IStationFinderFilter
@@ -16,7 +16,7 @@ object StationFinder : IStationFinder{
     var serverUrl = "https://www.ncdc.noaa.gov/cdo-web/api/v2/stations"
 
     fun initialize(token: String) {
-        this.token = token
+        StationFinder.token = token
     }
 
     override fun requestStationList(filter: IStationFinderFilter, callback: IStationFinderRequestCallback) {
@@ -31,8 +31,8 @@ object StationFinder : IStationFinder{
                 .addQueryParameter("extent", ""+filter.getExtent().getSouthwestBound().getLatitude() + "," + filter.getExtent().getSouthwestBound().getLongitude() + "," + filter.getExtent().getNortheastBound().getLatitude() + "," + filter.getExtent().getNortheastBound().getLongitude())
                 .addQueryParameter("datasetid", filter.getDatasetId().getValue())
                 .addQueryParameter("datatypeid", filter.getDataTypeId().getValue())
-                .addQueryParameter("startdate", getFormattedDate(filter.getStartDate()))//"2010-01-01"
-                .addQueryParameter("enddate", getFormattedDate(filter.getEndDate()))
+                .addQueryParameter("startdate", StationUtility.getFormattedDate(filter.getStartDate()))//"2010-01-01"
+                .addQueryParameter("enddate", StationUtility.getFormattedDate(filter.getEndDate()))
                 .build()
         val request = Request.Builder()
                 .url(httpUrl)
@@ -51,15 +51,25 @@ object StationFinder : IStationFinder{
         })
     }
 
-    private fun parseStationId(networkResponse: Response?): List<String> {
+    private fun parseStationId(networkResponse: Response?): List<Station> {
         val responseString = networkResponse?.body()?.string()
-        val stationIds = ArrayList<String>()
+        val stationIds = ArrayList<Station>()
         try {
             val obj = JSONObject(responseString)
             val resultArray = obj.getJSONArray("results")
             for (i in 0 until resultArray.length()) {
                 val resultObject = resultArray.getJSONObject(i)
-                stationIds.add(resultObject.getString("id"))
+                var station = Station()
+                station.id = resultObject.getString("id")
+                station.name = resultObject.getString("name")
+                station.elevationUnit = resultObject.getString("elevationUnit")
+                station.elevation = resultObject.getDouble("elevation")
+                station.latitude = resultObject.getDouble("latitude")
+                station.longitude = resultObject.getDouble("longitude")
+                station.datacoverage = resultObject.getInt("datacoverage")
+                station.mindate = StationUtility.parseCalendar(resultObject.getString("mindate"))
+                station.maxdate = StationUtility.parseCalendar(resultObject.getString("maxdate"))
+                stationIds.add(station)
             }
         } catch (e: JSONException) {
             e.printStackTrace()
@@ -68,7 +78,5 @@ object StationFinder : IStationFinder{
         return stationIds
     }
 
-    fun getFormattedDate(calendar: Calendar ) : String {
-        return ""+calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+calendar.get(Calendar.DAY_OF_MONTH)
-    }
+
 }
