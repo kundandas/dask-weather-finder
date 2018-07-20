@@ -9,7 +9,7 @@ class Station {
     var latitude: Double = 0.0
     var longitude: Double = 0.0
     lateinit var name: String
-    var datacoverage: Int = 0
+    var datacoverage: Double = 0.0
     lateinit var id: String
     lateinit var elevationUnit: String
 

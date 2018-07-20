@@ -66,7 +66,7 @@ object StationFinder : IStationFinder{
                 station.elevation = resultObject.getDouble("elevation")
                 station.latitude = resultObject.getDouble("latitude")
                 station.longitude = resultObject.getDouble("longitude")
-                station.datacoverage = resultObject.getInt("datacoverage")
+                station.datacoverage = resultObject.getDouble("datacoverage")
                 station.mindate = StationUtility.parseCalendar(resultObject.getString("mindate"))
                 station.maxdate = StationUtility.parseCalendar(resultObject.getString("maxdate"))
                 stationIds.add(station)
