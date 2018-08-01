@@ -8,4 +8,6 @@ interface IStationFinderFilter {
     fun getDataTypeId(): DataTypeId
     fun getStartDate(): Calendar
     fun getEndDate(): Calendar
+    fun getGeoLocation() : IGeolocation
+    fun getRadiusInKM() : Double
 }
